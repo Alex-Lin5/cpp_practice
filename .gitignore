@@ -1,7 +1,8 @@
 .vscode
+.vs
 
 *.txt
 *.exe
 *.stackdump
 
-classnote/*
+// classnote/*
