@@ -42,7 +42,7 @@ public:
 };
 DLinkedList::DLinkedList(initializer_list<int> list) {
     tail = head = nullptr;
-    node* pt = nullptr;
+    // node* pt = nullptr;
     for (auto itr : list) {
         node* pt = new node{ itr };
         if (!head) {
@@ -200,8 +200,13 @@ int main() {
 
  
     int listt[]{5, 3, 4, 6, 9, 6, 4, 7, 9, 7, 9, 5, 5, 9, 9, 3, 2, 2, 6, 9, 4, 4, 3, 6, 7, 9, 5, 4, 4, 1, 5, 7, 9, 1, 6, 6, 1, 3, 4, 2, 4, 5, 4, 7, 1};
-    cout << *listt << endl;
-    DLinkedList <int> dllist{ 9, 7, 9, 5, 5, 9, 9, 3, 2, 2};
+    // cout << *listt << endl;
+    // DLinkedList dllist{ 9, 7, 9, 5, 5, 9, 9, 3, 2, 2};
+    DLinkedList dllist{
+        5, 3, 4, 6, 9, 6, 4, 7, 9, 7, 9, 5, 5, 9, 9, 3, 2, 2, 6,
+        };
+    // cout << "HI" << endl ;
+    dllist.print_F();
     // dllist.print_F(); cout << " F " << endl;
     // dllist.print_B(); cout << " B " << endl;
     // dllist.removeAll(0); 
