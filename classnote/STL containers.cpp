@@ -2,6 +2,7 @@
 //Standard Template Library (STL)  containers:  vector, list, map, stack, queue, etc.
 //Operator Overloading
 #include <iostream>
+#include <algorithm>
 #include <vector>
 #include <list>
 #include <map>
