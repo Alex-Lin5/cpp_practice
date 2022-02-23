@@ -53,33 +53,33 @@ int main() {
 	add_course(DB, 20171, 11111, C4);
 	add_course(DB, 20171, 11111, C3);
 	add_course(DB, 20171, 11111, C2);
-	// print_student_semester_courses(DB, 20171, 11111);
+	print_student_semester_courses(DB, 20171, 11111);
 
-	// drop_course(DB, 20171, 11111, C1);
-	// print_student_semester_courses(DB, 20171, 11111); //sorted according to course name
+	drop_course(DB, 20171, 11111, C1);
+	print_student_semester_courses(DB, 20171, 11111); //sorted according to course name
 
-	// course C5("CIS351", 2, 3, "A-"), C6("PSY205", 5, 3, "B+"), C7("MAT331", 2, 3, "A"), C8("ECN203", 4, 3, "A");
-	// add_course(DB, 20172, 11111, C5);
-	// add_course(DB, 20172, 11111, C6);
-	// add_course(DB, 20172, 11111, C7);
-	// add_course(DB, 20172, 11111, C8);
-	// add_course(DB, 20172, 11111, C3);
-	// print_student_all_courses(DB, 11111);//ID GPA
+	course C5("CIS351", 2, 3, "A-"), C6("PSY205", 5, 3, "B+"), C7("MAT331", 2, 3, "A"), C8("ECN203", 4, 3, "A");
+	add_course(DB, 20172, 11111, C5);
+	add_course(DB, 20172, 11111, C6);
+	add_course(DB, 20172, 11111, C7);
+	add_course(DB, 20172, 11111, C8);
+	add_course(DB, 20172, 11111, C3);
+	print_student_all_courses(DB, 11111);//ID GPA
 
-	// add_student(DB, 11112);
-	// add_course(DB, 20171, 11112, C2);
-	// add_course(DB, 20171, 11112, C5);
-	// add_course(DB, 20171, 11112, C7);
-	// add_course(DB, 20171, 11112, C4);
-	// print_student_semester_courses(DB, 20171, 11112);
+	add_student(DB, 11112);
+	add_course(DB, 20171, 11112, C2);
+	add_course(DB, 20171, 11112, C5);
+	add_course(DB, 20171, 11112, C7);
+	add_course(DB, 20171, 11112, C4);
+	print_student_semester_courses(DB, 20171, 11112);
 
-	// add_course(DB, 20172, 11112, C8);
-	// add_course(DB, 20172, 11112, C3);
-	// add_course(DB, 20172, 11112, C5);
-	// add_course(DB, 20172, 11112, C1);
-	// print_student_semester_courses(DB, 20172, 11112);
+	add_course(DB, 20172, 11112, C8);
+	add_course(DB, 20172, 11112, C3);
+	add_course(DB, 20172, 11112, C5);
+	add_course(DB, 20172, 11112, C1);
+	print_student_semester_courses(DB, 20172, 11112);
 
-	// print_student_all_courses(DB, 11112);
+	print_student_all_courses(DB, 11112);
 
 	// cout << DB << endl;
 	// remove_student(DB, 11111);
@@ -88,74 +88,123 @@ int main() {
 	return 0;
 }
 
-// ostream& operator<<(ostream& str, map<int, map<int, list<course*>*>>& DB){
-// 	for (auto& id : DB) {
-// 		for (auto& sem : *id) {
-//             for (auto& course : *sem)
-// 			str << j << " ";
-// 		}
-// 		str << endl;
-// 	}
-// 	return str;
-// }
-
 void add_student(map<int, map<int, list<course*>*>>& DB, int id){
-    //	add_student(DB, 11111);
-    if(DB.find(id) != DB.end()) return;
+    if(DB.find(id) != DB.end()) return; // student already added
     DB.insert({id, map<int, list<course*>*>()});
 
     // DB.insert({id, auto});
 }
-//Do nothing and return if the student is already in DB.
 
 void remove_student(map<int, map<int, list<course*>*>>& DB, int id){
-    if(DB.find(id) != DB.end())
+    if(DB.find(id) == DB.end()) return; // no student in this id
+    else{
+        for(auto& sem : DB[id]){
+            for(auto& listc : *sem.second){
+                delete listc;// remove course
+            }
+            delete sem.second;// remove list
+            DB[id].erase(sem.first);
+        }
         DB.erase(id);
-        // delete DB[id];
+    }
+    return;       
 }
 void add_course(map<int, map<int, list<course*>*>>& DB, int semester, int id, course c){
     if(DB.find(id) == DB.end()) return; // no student in this id
-    else if(DB[id].find(semester) == DB[id].end()) return; // no course in this semester
-    auto listc {*DB[id][semester]};
-    auto itr = find(*listc.begin(), *listc.end(), c);
-    // // cout << typeid(itr).name() << endl;
-    if(itr != *listc.end()) return; //duplicate course
-    else{
-        itr = *listc.begin();
-        // cout << **itr << endl;
-        while(itr != *listc.end()){
-            // if(itr->course < course c)
-            if(*itr < c)
-                itr++;
-            else
-                break;
+    for(auto& sem : DB[id]){ // find course in another semester
+        for(auto& listc : *sem.second){
+            if(*listc == c) return;
         }
-        // auto cc = new course (c.name, c.section, c.credits, c.grade);
-        // listc.insert(itr, *cc);
     }
+    if(DB[id].find(semester) == DB[id].end()){ // empty semester
+        // DB[id].insert({semester, list<course*>*}); 
+        ;
+    }
+    auto& listc {*DB[id][semester]};
+    for(auto&itr : listc){
+        if(c < *itr)
+            itr++;
+        else{
+            // listc.insert(itr, new course (c.name, c.section, c.credits, c.grade));
+            break;
+        }
+
+    }
+
+    // auto itr = find(*listc.begin(), *listc.end(), c);
+    // // cout << typeid(itr).name() << endl;
+    // if(itr != *listc.end()) return; //duplicate course
+    // else{
+    //     itr = *listc.begin();
+    //     // cout << **itr << endl;
+    //     while(itr != *listc.end()){
+    //         // if(itr->course < course c)
+    //         if(*itr < c)
+    //             itr++;
+    //         else
+    //             break;
+    //     }
+    //     // auto cc = new course (c.name, c.section, c.credits, c.grade);
+        // listc.insert({itr, new course {c}});
+    // }
     return;
     // cout << **couli.begin() << endl;
 }
 void drop_course(map<int, map<int, list<course*>*>>& DB, int semester, int id, course c){
     if(DB.find(id) == DB.end()) return; // no student in this id
-    else if(DB[id].find(semester) == DB[id].end()) return; // no course in this semester
-    auto listc {*DB[id][semester]};
+    else if(DB[id].find(semester) == DB[id].end()) return; // empty semester
+    auto& listc {*DB[id][semester]};
     auto itr = find(*listc.begin(), *listc.end(), c);
     if(itr == *listc.end()) return; // course is not found
     else{
-        delete itr;
+        delete itr; // delete course
+        if(listc.begin() == listc.end()){ // delete empty list if no course in semster
+            delete &listc;
+            DB[id].erase(semester);
+        }
     }
     return;
 }
 
+void print_student_all_courses(map<int, map<int, list<course*>*>>& DB, int id){
+    if(DB.find(id) == DB.end()) return; // no student in this id
+    else{
+        cout << "Student ID: " << id << endl;
+        for(auto& sem : DB[id]){
+            cout << "semester: " << sem.first << endl;
+            for(auto& listc : *sem.second){
+                cout << '(' << listc << ')' << ' ';
+            }
+            cout << endl;
+        }
+
+    }
+    return; 
+}
+
 void print_student_semester_courses(map<int, map<int, list<course*>*>>& DB, int semester, int id){
     if(DB.find(id) == DB.end()) return; // no student in this id
-    else if(DB[id].find(semester) == DB[id].end()) return; // no course in this semester
-    auto listc {*DB[id][semester]};
-    // if(*listc.begin() == *listc.end()) return; //
+    else{
+        cout << "Student ID: " << id << endl;
+        cout << "semester: " << semester << endl;
+        for(auto& listc : *DB[id][semester]){
+            cout << '(' << listc << ')' << ' ';
+        }
+        cout << endl;
+        }
+    return;
 }
 
-void print_student_all_courses(map<int, map<int, list<course*>*>>& DB, int id){
-    ;
+ostream& operator<<(ostream& str, map<int, map<int, list<course*>*>>& DB){
+	for (auto& id : DB) {
+        str << "Student ID: " << id.first << endl;
+		for (auto& sem : id.second) {
+        str << "semester: " << sem.first << endl;
+            for (auto& listc : *sem.second)
+			    str << '(' << listc << ')' << ' ';
+            str << endl;
+		}
+	}
+    str << endl;
+	return str;
 }
-
