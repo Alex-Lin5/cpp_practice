@@ -42,8 +42,9 @@ void print_student_semester_courses(map<int, map<int, list<course*>*>>& DB, int 
 void print_student_all_courses(map<int, map<int, list<course*>*>>& DB, int id);
 //Do nothing and return if the student is not in DB.
 
-ostream& operator<<(ostream& str, const map<int, map<int, list<course*>*>>& DB);
-ostream& operator<<(ostream& str, const course& crs);
+ostream& operator<<(ostream& str, course*& listc);
+ostream& operator<<(ostream& str, map<int, map<int, list<course*>*>>& DB);
+
 int main() {
 	map<int, map<int, list<course *>*>> DB;
 	add_student(DB, 11111);
@@ -81,9 +82,9 @@ int main() {
 
 	print_student_all_courses(DB, 11112);
 
-	// cout << DB << endl;
-	// remove_student(DB, 11111);
-	// cout << DB << endl;
+	cout << DB << endl;
+	remove_student(DB, 11111);
+	cout << DB << endl;
 
 	return 0;
 }
@@ -91,24 +92,34 @@ int main() {
 void add_student(map<int, map<int, list<course*>*>>& DB, int id){
     if(DB.find(id) != DB.end()) return; // student already added
     DB.insert({id, map<int, list<course*>*>()});
-
-    // DB.insert({id, auto});
 }
 
 void remove_student(map<int, map<int, list<course*>*>>& DB, int id){
     if(DB.find(id) == DB.end()) return; // no student in this id
     else{
-        for(auto& sem : DB[id]){
-            for(auto& listc : *sem.second){
-                delete listc;// remove course
+        for(auto& sem : DB[id]){          
+            auto& listc {*sem.second};
+            auto itr = listc.begin();
+            while(itr != listc.end()){
+                delete *itr;
+                itr = listc.erase(itr);
+                // itr++;
             }
-            delete sem.second;// remove list
+            // for(auto& crs : listc){
+            //     delete crs;// remove course
+            //     crs = listc.erase(crs);
+                
+            // }
+            delete &listc;// remove list
+            
+            // DB[id].erase(*sem.second);
             DB[id].erase(sem.first);
         }
         DB.erase(id);
     }
     return;       
 }
+
 void add_course(map<int, map<int, list<course*>*>>& DB, int semester, int id, course c){
     if(DB.find(id) == DB.end()) return; // no student in this id
     for(auto& sem : DB[id]){ // find course in another semester
@@ -117,53 +128,63 @@ void add_course(map<int, map<int, list<course*>*>>& DB, int semester, int id, co
         }
     }
     if(DB[id].find(semester) == DB[id].end()){ // empty semester
-        // DB[id].insert({semester, list<course*>*}); 
-        ;
+        DB[id].insert({semester, new list<course*>()}); 
+        // cout << "add semester" << endl;
     }
     auto& listc {*DB[id][semester]};
-    for(auto&itr : listc){
-        if(c < *itr)
-            itr++;
-        else{
+    auto itr = listc.begin();
+    while(itr != listc.end()){
+        if(c < **itr){
             // listc.insert(itr, new course (c.name, c.section, c.credits, c.grade));
+            listc.insert(itr, new course (c));
+            // cout << "add course" << endl;
             break;
+
         }
-
+        else{
+            itr++;
+        }
     }
-
-    // auto itr = find(*listc.begin(), *listc.end(), c);
-    // // cout << typeid(itr).name() << endl;
-    // if(itr != *listc.end()) return; //duplicate course
-    // else{
-    //     itr = *listc.begin();
-    //     // cout << **itr << endl;
-    //     while(itr != *listc.end()){
-    //         // if(itr->course < course c)
-    //         if(*itr < c)
-    //             itr++;
-    //         else
-    //             break;
-    //     }
-    //     // auto cc = new course (c.name, c.section, c.credits, c.grade);
-        // listc.insert({itr, new course {c}});
-    // }
+    if(itr == listc.end())
+        listc.push_back(new course (c));
+        // listc.push_back(new course (c.name, c.section, c.credits, c.grade));
     return;
-    // cout << **couli.begin() << endl;
 }
+
 void drop_course(map<int, map<int, list<course*>*>>& DB, int semester, int id, course c){
     if(DB.find(id) == DB.end()) return; // no student in this id
     else if(DB[id].find(semester) == DB[id].end()) return; // empty semester
     auto& listc {*DB[id][semester]};
-    auto itr = find(*listc.begin(), *listc.end(), c);
-    if(itr == *listc.end()) return; // course is not found
-    else{
-        delete itr; // delete course
-        if(listc.begin() == listc.end()){ // delete empty list if no course in semster
-            delete &listc;
-            DB[id].erase(semester);
+    // for(auto& crs : listc){
+    // // for(auto& crs : *DB[id][semester]){
+    //     if(c == *crs){
+    //         // cout << "delete course" << endl;
+    //         delete crs;
+    //         return;
+    //     }
+    //     // else
+    //         // cout << '1';
+    // }
+    auto itr = listc.begin();
+    while(itr != listc.end()){
+        if(c == **itr){
+            delete *itr;
+            itr = listc.erase(itr);
         }
+        else
+            itr++;
     }
-    return;
+    // auto itr = find(*listc.begin(), *listc.end(), c);
+    // if(itr == *listc.end()) return; // course is not found
+    // else{
+    //     cout << "drop course" << endl;
+    //     delete itr; // delete course
+    //     // if(listc.begin() == listc.end()){ // delete empty list if no course in semster
+    //     //     delete &listc;
+    //     //     DB[id].erase(semester);
+    //     // }
+    // }
+    // return;
 }
 
 void print_student_all_courses(map<int, map<int, list<course*>*>>& DB, int id){
@@ -173,11 +194,11 @@ void print_student_all_courses(map<int, map<int, list<course*>*>>& DB, int id){
         for(auto& sem : DB[id]){
             cout << "semester: " << sem.first << endl;
             for(auto& listc : *sem.second){
-                cout << '(' << listc << ')' << ' ';
+                cout << listc;
             }
             cout << endl;
         }
-
+        cout << endl << endl;
     }
     return; 
 }
@@ -187,24 +208,30 @@ void print_student_semester_courses(map<int, map<int, list<course*>*>>& DB, int 
     else{
         cout << "Student ID: " << id << endl;
         cout << "semester: " << semester << endl;
-        for(auto& listc : *DB[id][semester]){
-            cout << '(' << listc << ')' << ' ';
+        for(auto& listc : *DB[id][semester]){ // 
+            cout << listc;
         }
-        cout << endl;
+        cout << endl << endl;
         }
     return;
 }
 
+ostream& operator<<(ostream& str, course*& listc){
+    str << '(' << listc->name << ' ' << listc->section << ' ' 
+    << listc->credits << ' ' << listc->grade << ") ";
+    return str;    
+}
 ostream& operator<<(ostream& str, map<int, map<int, list<course*>*>>& DB){
 	for (auto& id : DB) {
-        str << "Student ID: " << id.first << endl;
+        str << "Student ID: " << id.first << '\n';
 		for (auto& sem : id.second) {
-        str << "semester: " << sem.first << endl;
-            for (auto& listc : *sem.second)
-			    str << '(' << listc << ')' << ' ';
-            str << endl;
+        str << "semester: " << sem.first << '\n';
+            for (auto& listc : *sem.second){
+                cout << listc;
+            }
+            str << '\n';
 		}
 	}
-    str << endl;
+    str << '\n';
 	return str;
 }
