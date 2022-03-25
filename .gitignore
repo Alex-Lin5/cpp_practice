@@ -4,6 +4,8 @@
 *.txt
 *.exe
 *.stackdump
+*.jpg
+*.png
 Project1
 
 // classnote/*
